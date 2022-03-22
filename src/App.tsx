@@ -18,11 +18,11 @@ function App() {
 
   useEffect(() => {
     textAreaRef.current?.focus();
-  }, [])
+  }, []);
 
   useEffect(() => {
-    if(document.activeElement !== textAreaRef.current && typing) kickTheDog()
-  })
+    if (document.activeElement !== textAreaRef.current && typing) kickTheDog();
+  });
 
   return (
     <Container typing={typing}>
@@ -33,7 +33,7 @@ function App() {
         className="text"
         onChange={(e) => setContent(e.target.value)}
         onClick={() => setTyping(true)}
-        onKeyPress={() => {
+        onKeyDown={() => {
           if (watchdog) {
             clearTimeout(watchdog);
             setTyping(true);
@@ -84,16 +84,15 @@ const Container = styled.div<Props>`
 
   .md {
     position: absolute;
-    left: 32px;
-    top: 32px;
     font-family: arial;
     font-size: 14px;
     line-height: 18px;
     height: 200px;
-    color: ${({ typing }) => (!typing ? "blue" : "transparent")};
+    visibility: ${({ typing }) => (!typing ? "visible" : "hidden")};
+    color: blue;
     max-height: 200px;
     max-width: 400px;
-    overflow-wrap: break-word;
+    word-break: break-all;
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: #ff0000;
