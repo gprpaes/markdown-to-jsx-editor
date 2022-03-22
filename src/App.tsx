@@ -1,26 +1,103 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useRef, useState } from "react";
+import styled from "styled-components";
+import Markdown from "markdown-to-jsx";
+
+interface Props {
+  typing: boolean;
+}
 
 function App() {
+  const [content, setContent] = useState("");
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const [watchdog, setWatchdog] = useState<NodeJS.Timeout | null>(null);
+  const [typing, setTyping] = useState(true);
+
+  function kickTheDog() {
+    setTyping(false);
+  }
+
+  useEffect(() => {
+    textAreaRef.current?.focus();
+  }, [])
+
+  useEffect(() => {
+    if(document.activeElement !== textAreaRef.current && typing) kickTheDog()
+  })
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Container typing={typing}>
+      <textarea
+        placeholder={"Type here..."}
+        ref={textAreaRef}
+        spellCheck="false"
+        className="text"
+        onChange={(e) => setContent(e.target.value)}
+        onClick={() => setTyping(true)}
+        onKeyPress={() => {
+          if (watchdog) {
+            clearTimeout(watchdog);
+            setTyping(true);
+          }
+          setWatchdog(setTimeout(kickTheDog, 1000));
+        }}
+      ></textarea>
+      <Markdown
+        className="md"
+        children={content}
+        onClick={() => {
+          if (document.activeElement !== textAreaRef.current)
+            textAreaRef.current?.focus();
+          setTyping(true);
+        }}
+      />
+    </Container>
   );
 }
+
+const Container = styled.div<Props>`
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  font-size: 12px;
+  font-family: arial;
+  padding: 32px;
+  .text {
+    position: relative;
+    border: none;
+    padding: 0;
+    margin: 0;
+    resize: none;
+    width: 400px;
+    font-family: arial;
+    font-size: 14px;
+    line-height: 18px;
+    text-decoration: none;
+    height: 200px;
+    color: ${({ typing }) => (typing ? "red" : "transparent")};
+    background-color: transparent;
+    overflow: hidden !important;
+  }
+
+  .text::placeholder {
+    color: black;
+  }
+
+  .md {
+    position: absolute;
+    left: 32px;
+    top: 32px;
+    font-family: arial;
+    font-size: 14px;
+    line-height: 18px;
+    height: 200px;
+    color: ${({ typing }) => (!typing ? "blue" : "transparent")};
+    max-height: 200px;
+    max-width: 400px;
+    overflow-wrap: break-word;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #ff0000;
+  }
+`;
 
 export default App;
